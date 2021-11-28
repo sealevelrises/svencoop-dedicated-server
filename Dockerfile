@@ -1,10 +1,10 @@
 FROM debian:buster-slim as svencoop
 
-ENV USER steam
-ENV HOME "/home/${USER}"
-ENV STEAMCMDDIR "${HOME}/steamcmd"
-ENV GAME_DIR "svencoop"
-ENV GAME_PATH "${HOME}/${GAME_DIR}"
+ARG USER=steam
+ARG HOME="/home/${USER}"
+ARG STEAMCMDDIR="${HOME}/steamcmd"
+ARG GAME_DIR="svencoop"
+ARG GAME_PATH="${HOME}/${GAME_DIR}"
 
 RUN set -x \
 	&& dpkg --add-architecture i386 \
@@ -34,14 +34,6 @@ RUN "${STEAMCMDDIR}/steamcmd.sh" \
 
 FROM debian:buster-slim
 
-ARG PUID=1000
-ENV USER steam
-ENV HOME "/home/${USER}"
-ENV STEAMCMDDIR "${HOME}/steamcmd"
-ENV STEAM_APPID 276060
-ENV GAME_DIR "svencoop"
-ENV GAME_PATH "${HOME}/${GAME_DIR}"
-
 RUN set -x \
 	&& dpkg --add-architecture i386 \
 	&& apt-get update \
@@ -60,6 +52,13 @@ RUN set -x \
 	&& apt-get clean autoclean \
 	&& rm -rf /var/lib/apt/lists/*
 
+ARG PUID=1000
+ARG USER=steam
+ARG HOME="/home/${USER}"
+ARG STEAMCMDDIR="${HOME}/steamcmd"
+ARG GAME_DIR="svencoop"
+ARG GAME_PATH="${HOME}/${GAME_DIR}"
+
 RUN useradd -u "${PUID}" -m "${USER}"
 
 COPY --chown=${PUID}:${PUID} --from=svencoop ${HOME} ${HOME}
@@ -74,15 +73,19 @@ USER ${USER}
 
 WORKDIR ${GAME_PATH}
 
-ENV GAME_MAP "osprey"
-ENV GAME_MAXPLAYERS 32
-ENV GAME_ARGS "+maxplayers ${GAME_MAXPLAYERS} +map ${GAME_MAP} +log on"
-# ENV LD_LIBRARY_PATH "${GAME_PATH}/bin:${GAME_PATH}/bin/linux32"
+ARG GAME_PORT=27016
+ARG GAME_MAXPLAYERS=32
+ARG GAME_MAP="_server_start"
 
-CMD ${GAME_PATH}/svends_run -console -port 27016 ${GAME_ARGS}
+ENV GAME_PORT=${GAME_PORT}
+ENV GAME_MAXPLAYERS=${GAME_MAXPLAYERS}
+ENV GAME_MAP=${GAME_MAP}
+ENV GAME_ARGS="+maxplayers ${GAME_MAXPLAYERS} +map ${GAME_MAP} +log on"
+
+CMD ./svends_run -console -port ${GAME_PORT} ${GAME_ARGS}
 
 # Expose ports
-EXPOSE 27016/tcp
-EXPOSE 27016/udp
+EXPOSE ${GAME_PORT}/tcp
+EXPOSE ${GAME_PORT}/udp
 # VAC
 EXPOSE 26900/udp
