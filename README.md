@@ -10,13 +10,13 @@ Provide an easy method to create a Sven Coop dedicated server rapidly and repeat
 
 ```bash
 docker container rm -f -v svencoop-dedicated-server && \
-docker build -t v54io/svencoop-dedicated-server . && \
+docker build -t svencoop-dedicated-server . && \
 docker run -d -it \
   -p 27016:27016/tcp \
   -p 27016:27016/udp \
   -p 26900:26900/udp \
   --name svencoop-dedicated-server \
-  v54io/svencoop-dedicated-server
+  svencoop-dedicated-server
 ```
 
 ### Connecting
