@@ -1,4 +1,4 @@
-FROM debian:buster-slim as svencoop
+FROM debian:bullseye-slim as svencoop
 
 ARG USER=steam
 ARG HOME="/home/${USER}"
@@ -32,14 +32,15 @@ RUN "${STEAMCMDDIR}/steamcmd.sh" \
 		+app_update 276060 \
 		+quit
 
-FROM debian:buster-slim
+
+FROM debian:bullseye-slim
 
 RUN set -x \
 	&& dpkg --add-architecture i386 \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends --no-install-suggests \
 		lib32stdc++6 \
-		lib32gcc1 \
+		lib32gcc-s1 \
 		libssl1.1:i386 \
 		zlib1g:i386 \
 		libsdl2-2.0-0:i386 \
@@ -74,18 +75,18 @@ USER ${USER}
 WORKDIR ${GAME_PATH}
 
 ARG GAME_PORT=27016
+ARG VAC_PORT=26900
 ARG GAME_MAXPLAYERS=32
 ARG GAME_MAP="_server_start"
 
 ENV GAME_PORT=${GAME_PORT}
+ENV VAC_PORT=${VAC_PORT}
 ENV GAME_MAXPLAYERS=${GAME_MAXPLAYERS}
 ENV GAME_MAP=${GAME_MAP}
 ENV GAME_ARGS="+maxplayers ${GAME_MAXPLAYERS} +map ${GAME_MAP} +log on"
 
-CMD ./svends_run -console -port ${GAME_PORT} ${GAME_ARGS}
+CMD ./svends_run -console -port ${GAME_PORT} -sport ${VAC_PORT} ${GAME_ARGS}
 
-# Expose ports
 EXPOSE ${GAME_PORT}/tcp
 EXPOSE ${GAME_PORT}/udp
-# VAC
-EXPOSE 26900/udp
+EXPOSE ${VAC_PORT}/udp
